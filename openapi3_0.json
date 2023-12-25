@@ -1,0 +1,871 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Postal application",
+    "description": "An application for registering mail items and managing their movement",
+    "contact": {
+      "name": "Alexander Frolov",
+      "email": "frolovAlexandri@list.ru"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Контроллер почтовых отправлений",
+      "description": "Содержит методы по добавлению и изменению состояний почтовых отправлений"
+    }
+  ],
+  "paths": {
+    "/post/new_dispatch": {
+      "post": {
+        "tags": [
+          "Контроллер почтовых отправлений"
+        ],
+        "summary": "Регистрация почтового отправления",
+        "operationId": "addNewDispatch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "recipientName",
+                  "type"
+                ],
+                "type": "object",
+                "properties": {
+                  "destinationId": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "recipientName": {
+                    "maxLength": 100,
+                    "minLength": 6,
+                    "type": "string",
+                    "description": "Имя получателя"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Тип посылки"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "recipientName": {
+                      "type": "string",
+                      "description": "Имя получателя"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Тип посылки",
+                      "enum": [
+                        "LETTER",
+                        "PACKAGE",
+                        "PARCEL",
+                        "POSTCARD"
+                      ]
+                    },
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Статус отправления",
+                      "enum": [
+                        "REGISTERED",
+                        "IN_TRANSIT",
+                        "AT_INTERMEDIATE_POINT",
+                        "DELIVERED",
+                        "RECEIVED"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/post/next_destination": {
+      "patch": {
+        "tags": [
+          "Контроллер почтовых отправлений"
+        ],
+        "summary": "Регистрация отправления посылки из точки пребывания",
+        "operationId": "dispatchToPostOffice",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "in": "query",
+            "description": "Идентификатор посылки",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "postOfficeId",
+            "in": "query",
+            "description": "Идентификатор почтового отделения",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "receiverName": {
+                      "type": "string",
+                      "description": "Имя получателя"
+                    },
+                    "currentDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "finalDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Статус отправления",
+                      "enum": [
+                        "REGISTERED",
+                        "IN_TRANSIT",
+                        "AT_INTERMEDIATE_POINT",
+                        "DELIVERED",
+                        "RECEIVED"
+                      ]
+                    },
+                    "timeOfOperation": {
+                      "type": "string",
+                      "description": "Время совершения операции",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/post/confirmation_of_receipt": {
+      "patch": {
+        "tags": [
+          "Контроллер почтовых отправлений"
+        ],
+        "summary": "Подтверждение доставки почтового отправления получателю",
+        "operationId": "confirmationOfReceipt",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "in": "query",
+            "description": "Идентификатор посылки",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "receiverName": {
+                      "type": "string",
+                      "description": "Имя получателя"
+                    },
+                    "currentDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "finalDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Статус отправления",
+                      "enum": [
+                        "REGISTERED",
+                        "IN_TRANSIT",
+                        "AT_INTERMEDIATE_POINT",
+                        "DELIVERED",
+                        "RECEIVED"
+                      ]
+                    },
+                    "timeOfOperation": {
+                      "type": "string",
+                      "description": "Время совершения операции",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/post/confirmation_of_arrival": {
+      "patch": {
+        "tags": [
+          "Контроллер почтовых отправлений"
+        ],
+        "summary": "Подтверждение прибытия почтового отправления",
+        "operationId": "confirmationOfArrival",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "in": "query",
+            "description": "Идентификатор посылки",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "postOfficeId",
+            "in": "query",
+            "description": "Идентификатор почтового отделения",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "receiverName": {
+                      "type": "string",
+                      "description": "Имя получателя"
+                    },
+                    "currentDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "finalDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Статус отправления",
+                      "enum": [
+                        "REGISTERED",
+                        "IN_TRANSIT",
+                        "AT_INTERMEDIATE_POINT",
+                        "DELIVERED",
+                        "RECEIVED"
+                      ]
+                    },
+                    "timeOfOperation": {
+                      "type": "string",
+                      "description": "Время совершения операции",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/post/status/{dispatchId}": {
+      "get": {
+        "tags": [
+          "Контроллер почтовых отправлений"
+        ],
+        "summary": "Получение текущего статуса и местонахождения посылки",
+        "operationId": "getStatusOfDispatch",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "in": "path",
+            "description": "Идентификатор посылки",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "receiverName": {
+                      "type": "string",
+                      "description": "Имя получателя"
+                    },
+                    "currentDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "finalDestination": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "Название почтового отделения"
+                        },
+                        "address": {
+                          "type": "string",
+                          "description": "Адрес почтового отделения"
+                        },
+                        "index": {
+                          "type": "string",
+                          "description": "Индекс почтового отделения"
+                        }
+                      },
+                      "description": "Точка назначения"
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Статус отправления",
+                      "enum": [
+                        "REGISTERED",
+                        "IN_TRANSIT",
+                        "AT_INTERMEDIATE_POINT",
+                        "DELIVERED",
+                        "RECEIVED"
+                      ]
+                    },
+                    "timeOfOperation": {
+                      "type": "string",
+                      "description": "Время совершения операции",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/post/history/{dispatchId}": {
+      "get": {
+        "tags": [
+          "Контроллер почтовых отправлений"
+        ],
+        "summary": "Получение истории изменений почтового отправления",
+        "operationId": "getHistoryOfDispatch",
+        "parameters": [
+          {
+            "name": "dispatchId",
+            "in": "path",
+            "description": "Идентификатор посылки",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Номер страницы пагинации",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Количество элементов на странице",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "format": "int64"
+                      },
+                      "currentDestination": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "description": "Название почтового отделения"
+                          },
+                          "address": {
+                            "type": "string",
+                            "description": "Адрес почтового отделения"
+                          },
+                          "index": {
+                            "type": "string",
+                            "description": "Индекс почтового отделения"
+                          }
+                        },
+                        "description": "Точка назначения"
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "Статус отправления",
+                        "enum": [
+                          "REGISTERED",
+                          "IN_TRANSIT",
+                          "AT_INTERMEDIATE_POINT",
+                          "DELIVERED",
+                          "RECEIVED"
+                        ]
+                      },
+                      "dateTime": {
+                        "type": "string",
+                        "description": "Время совершения операции",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {}
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PostalDispatchCreateDto": {
+        "required": [
+          "recipientName",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "destinationId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "recipientName": {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "description": "Имя получателя"
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип посылки"
+          }
+        }
+      },
+      "PostOfficeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Название почтового отделения"
+          },
+          "address": {
+            "type": "string",
+            "description": "Адрес почтового отделения"
+          },
+          "index": {
+            "type": "string",
+            "description": "Индекс почтового отделения"
+          }
+        },
+        "description": "Точка назначения"
+      },
+      "PostalDispatchGetDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "recipientName": {
+            "type": "string",
+            "description": "Имя получателя"
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип посылки",
+            "enum": [
+              "LETTER",
+              "PACKAGE",
+              "PARCEL",
+              "POSTCARD"
+            ]
+          },
+          "destination": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Название почтового отделения"
+              },
+              "address": {
+                "type": "string",
+                "description": "Адрес почтового отделения"
+              },
+              "index": {
+                "type": "string",
+                "description": "Индекс почтового отделения"
+              }
+            },
+            "description": "Точка назначения"
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус отправления",
+            "enum": [
+              "REGISTERED",
+              "IN_TRANSIT",
+              "AT_INTERMEDIATE_POINT",
+              "DELIVERED",
+              "RECEIVED"
+            ]
+          }
+        }
+      },
+      "PostalDispatchStatusDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "receiverName": {
+            "type": "string",
+            "description": "Имя получателя"
+          },
+          "currentDestination": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Название почтового отделения"
+              },
+              "address": {
+                "type": "string",
+                "description": "Адрес почтового отделения"
+              },
+              "index": {
+                "type": "string",
+                "description": "Индекс почтового отделения"
+              }
+            },
+            "description": "Точка назначения"
+          },
+          "finalDestination": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Название почтового отделения"
+              },
+              "address": {
+                "type": "string",
+                "description": "Адрес почтового отделения"
+              },
+              "index": {
+                "type": "string",
+                "description": "Индекс почтового отделения"
+              }
+            },
+            "description": "Точка назначения"
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус отправления",
+            "enum": [
+              "REGISTERED",
+              "IN_TRANSIT",
+              "AT_INTERMEDIATE_POINT",
+              "DELIVERED",
+              "RECEIVED"
+            ]
+          },
+          "timeOfOperation": {
+            "type": "string",
+            "description": "Время совершения операции",
+            "format": "date-time"
+          }
+        }
+      },
+      "PostalDispatchHistoryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "currentDestination": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Название почтового отделения"
+              },
+              "address": {
+                "type": "string",
+                "description": "Адрес почтового отделения"
+              },
+              "index": {
+                "type": "string",
+                "description": "Индекс почтового отделения"
+              }
+            },
+            "description": "Точка назначения"
+          },
+          "status": {
+            "type": "string",
+            "description": "Статус отправления",
+            "enum": [
+              "REGISTERED",
+              "IN_TRANSIT",
+              "AT_INTERMEDIATE_POINT",
+              "DELIVERED",
+              "RECEIVED"
+            ]
+          },
+          "dateTime": {
+            "type": "string",
+            "description": "Время совершения операции",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
